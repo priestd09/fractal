@@ -13,8 +13,9 @@ use League\Fractal\Test\Stub\Transformer\DefaultIncludeBookTransformer;
 use League\Fractal\Test\Stub\Transformer\NullIncludeBookTransformer;
 use League\Fractal\Test\Stub\Transformer\PrimitiveIncludeBookTransformer;
 use Mockery;
+use PHPUnit\Framework\TestCase;
 
-class ScopeTest extends \PHPUnit_Framework_TestCase
+class ScopeTest extends TestCase
 {
     protected $simpleItem = ['foo' => 'bar'];
     protected $simpleCollection = [['foo' => 'bar']];
@@ -241,6 +242,20 @@ class ScopeTest extends \PHPUnit_Framework_TestCase
         $scope = new Scope($manager, $resource);
 
         $this->assertSame(['data' => ['bar' => 'baz', 'book' => ['yin' => 'yang'], 'price' => 99]], $scope->toArray());
+    }
+
+    public function testToArrayWithNumericKeysPreserved()
+    {
+        $manager = new Manager();
+        $manager->setSerializer(new ArraySerializer());
+
+        $resource = new Item(['1' => 'First', '2' => 'Second'], function ($data) {
+            return $data;
+        });
+
+        $scope = new Scope($manager, $resource);
+
+        $this->assertSame(['1' => 'First', '2' => 'Second'], $scope->toArray());
     }
 
     public function testToArrayWithSideloadedIncludes()
